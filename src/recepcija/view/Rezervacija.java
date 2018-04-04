@@ -5,11 +5,20 @@
  */
 package recepcija.view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.math.BigDecimal;
 import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.border.Border;
+import recepcija.controller.Obrada;
 import recepcija.model.Gost;
 import recepcija.model.Soba;
+import recepcija.pomocno.HibernateUtil;
 
 /**
  *
@@ -17,10 +26,94 @@ import recepcija.model.Soba;
  */
 public class Rezervacija extends javax.swing.JFrame {
 
+    private Border obrub;
+
+    private Obrada<Gost> obrada;
+
     public Rezervacija() {
         initComponents();
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
+
+        obrub = txtIme.getBorder();
+        obrub = txtPrezime.getBorder();
+        obrub = txtTelefon.getBorder();
+        obrub = txtOib.getBorder();
+
+        obrada = new Obrada<>();
+        ucitajPodatke();
+        
+        JOptionPane.showInputDialog(null, "Unesi broj osoba");
+        
+        if (value == "0"){
+         dispose();
+        }
+        else
+   }
+  }
+        
+    }
+
+    private Gost napuniObjekt(Gost g) {
+
+        g.setIme(txtIme.getText());
+
+        g.setPrezime(txtPrezime.getText());
+
+        g.setOIB(txtOib.getText());
+
+        g.setTelefon(txtTelefon.getText());
+
+        return g;
+    }
+
+    private void ucitajPodatke() {
+        DefaultListModel<Gost> model = new DefaultListModel<>();
+
+        List<Gost> lista = HibernateUtil.getSession().createQuery(
+                "from Gost a where a.obrisano=false").list();
+
+        for (Gost g : lista) {
+            model.addElement(g);
+        }
+
+        this.lista.setModel(model);
+    }
+
+    private void resetirajGreske() {
+        txtIme.setBorder(obrub);
+        txtTelefon.setBorder(obrub);
+        txtOib.setBorder(obrub);
+        txtPrezime.setBorder(obrub);
+    }
+
+    private void oznaciGresku(JTextField polje) {
+        polje.setBorder(BorderFactory.createLineBorder(Color.decode("#FF0000")));
+        polje.requestFocus();
+    }
+
+    private boolean kontrola() {
+        if (txtIme.getText().trim().length() == 0) {
+            oznaciGresku(txtIme);
+            return false;
+        }
+
+        if (txtPrezime.getText().trim().length() == 0) {
+
+            oznaciGresku(txtPrezime);
+            return false;
+        }
+
+        if (txtTelefon.getText().trim().length() == 0) {
+            oznaciGresku(txtTelefon);
+            return false;
+        }
+
+        if (txtOib.getText().trim().length() == 0) {
+            oznaciGresku(txtOib);
+            return false;
+        }
+        return true;
 
     }
 
@@ -38,16 +131,14 @@ public class Rezervacija extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         txtIme = new javax.swing.JTextField();
         txtPrezime = new javax.swing.JTextField();
         txtOib = new javax.swing.JTextField();
         txtTelefon = new javax.swing.JTextField();
-        cmbBrojOsoba = new javax.swing.JComboBox<>();
         btnSpremi = new javax.swing.JButton();
         btnIzađi = new javax.swing.JButton();
-        jLabel7 = new javax.swing.JLabel();
-        txtCijena = new javax.swing.JTextField();
+        lista = new javax.swing.JList<>();
+        btnObrisi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -66,19 +157,9 @@ public class Rezervacija extends javax.swing.JFrame {
         jLabel5.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         jLabel5.setText("Telefon");
 
-        jLabel6.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel6.setText("Broj osoba");
-
         txtIme.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtImeActionPerformed(evt);
-            }
-        });
-
-        cmbBrojOsoba.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "2", "3", "4", "5", "6", "7" }));
-        cmbBrojOsoba.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbBrojOsobaActionPerformed(evt);
             }
         });
 
@@ -96,57 +177,66 @@ public class Rezervacija extends javax.swing.JFrame {
             }
         });
 
-        jLabel7.setText("Cijena");
+        lista.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                listaValueChanged(evt);
+            }
+        });
+
+        btnObrisi.setText("Obriši");
+        btnObrisi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnObrisiActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnSpremi)
-                .addGap(32, 32, 32)
-                .addComponent(btnIzađi)
-                .addGap(38, 38, 38))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtCijena))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(txtTelefon, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtIme, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtOib)
+                                    .addComponent(txtPrezime)))))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lista, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtTelefon)
-                            .addComponent(txtPrezime)
-                            .addComponent(txtOib)
-                            .addComponent(txtIme, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cmbBrojOsoba, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(216, 216, 216))
+                            .addComponent(btnSpremi)
+                            .addComponent(btnObrisi)
+                            .addComponent(btnIzađi))))
+                .addContainerGap(121, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(16, 16, 16)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtIme, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(16, 16, 16)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtIme, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtPrezime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -157,38 +247,71 @@ public class Rezervacija extends javax.swing.JFrame {
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtTelefon, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtCijena, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbBrojOsoba, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(4, 4, 4)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSpremi)
-                    .addComponent(btnIzađi))
-                .addContainerGap(32, Short.MAX_VALUE))
+                    .addComponent(lista, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnSpremi)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnObrisi)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnIzađi)))
+                .addGap(11, 39, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void cmbBrojOsobaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBrojOsobaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cmbBrojOsobaActionPerformed
 
     private void txtImeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtImeActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtImeActionPerformed
 
     private void btnIzađiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIzađiActionPerformed
-       dispose();
+        dispose();
     }//GEN-LAST:event_btnIzađiActionPerformed
 
     private void btnSpremiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSpremiActionPerformed
-        // TODO add your handling code here:
+        resetirajGreske();
+        if (!kontrola()) {
+            return;
+        }
+
+        Gost g = new Gost();
+        g = napuniObjekt(g);
+        obrada.save(g);
+        ucitajPodatke();
     }//GEN-LAST:event_btnSpremiActionPerformed
+
+    private void listaValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listaValueChanged
+
+        if (evt.getValueIsAdjusting()) {
+            return;
+        }
+
+        Gost g = lista.getSelectedValue();
+
+        if (g == null) {
+            return;
+        }
+        txtIme.setText(g.getIme());
+
+        txtPrezime.setText(g.getPrezime());
+
+        txtOib.setText(g.getOIB());
+
+        txtTelefon.setText(g.getTelefon());
+
+    }//GEN-LAST:event_listaValueChanged
+
+    private void btnObrisiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnObrisiActionPerformed
+        Gost g = lista.getSelectedValue();
+        if (g == null) {
+            JOptionPane.showMessageDialog(getRootPane(), "Prvo odaberite stavku");
+            return;
+        }
+        obrada.delete(g);
+        ucitajPodatke();
+
+    }//GEN-LAST:event_btnObrisiActionPerformed
 
     /**
      * @param args the command line arguments
@@ -196,22 +319,17 @@ public class Rezervacija extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnIzađi;
+    private javax.swing.JButton btnObrisi;
     private javax.swing.JButton btnSpremi;
-    private javax.swing.JComboBox<String> cmbBrojOsoba;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JTextField txtCijena;
+    private javax.swing.JList<Gost> lista;
     private javax.swing.JTextField txtIme;
     private javax.swing.JTextField txtOib;
     private javax.swing.JTextField txtPrezime;
     private javax.swing.JTextField txtTelefon;
     // End of variables declaration//GEN-END:variables
-
-
-
 }

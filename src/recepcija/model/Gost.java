@@ -13,7 +13,7 @@ public class Gost extends Entitet implements Serializable {
 
     private String ime;
     private String prezime;
-    private int OIB;
+    private String OIB;
     private String telefon;
     private Rezervacija rezervacija;
 
@@ -35,13 +35,15 @@ public class Gost extends Entitet implements Serializable {
         this.prezime = prezime;
     }
 
-    public int getOIB() {
+    public String getOIB() {
         return OIB;
     }
 
-    public void setOIB(int OIB) {
+    public void setOIB(String OIB) {
         this.OIB = OIB;
     }
+
+   
 
     public String getTelefon() {
         return telefon;
@@ -59,4 +61,11 @@ public class Gost extends Entitet implements Serializable {
         this.rezervacija = rezervacija;
     }
 
+    @Override
+    public String toString() {
+        return getIme() + " " + getPrezime();
+    }
+
+    
+    
 }
